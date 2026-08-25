@@ -810,3 +810,104 @@ export const deleteSubject = async (id) => {
     throw new Error(errorMsg);
   }
 };
+
+
+
+
+export const getSlokas = async () => {
+  try {
+    const token = localStorage.getItem("accessToken");
+    
+    const response = await axios.get(
+      `${API_URL}/admin-slokas/`,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+      }
+    );
+    
+    return response.data;
+  } catch (error) {
+    console.error("❌ Error fetching slokas:", error);
+    throw error;
+  }
+};
+
+/**
+ * Create a new sloka
+ * POST /create-sloka/
+ */
+export const createSloka = async (data) => {
+  try {
+    const token = localStorage.getItem("accessToken");
+    
+    const response = await axios.post(
+      `${API_URL}/create-sloka/`,
+      data,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+      }
+    );
+    
+    return response.data;
+  } catch (error) {
+    console.error("❌ Error creating sloka:", error);
+    throw error;
+  }
+};
+
+/**
+ * Update a sloka
+ * PUT /edit-sloka/{id}/
+ */
+export const updateSloka = async (id, data) => {
+  try {
+    const token = localStorage.getItem("accessToken");
+    
+    const response = await axios.put(
+      `${API_URL}/edit-sloka/${id}/`,
+      data,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+      }
+    );
+    
+    return response.data;
+  } catch (error) {
+    console.error("❌ Error updating sloka:", error);
+    throw error;
+  }
+};
+
+/**
+ * Delete a sloka
+ * DELETE /delete-sloka/{id}/
+ */
+export const deleteSloka = async (id) => {
+  try {
+    const token = localStorage.getItem("accessToken");
+    
+    const response = await axios.delete(
+      `${API_URL}/delete-sloka/${id}/`,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+      }
+    );
+    
+    return response.data;
+  } catch (error) {
+    console.error("❌ Error deleting sloka:", error);
+    throw error;
+  }
+};

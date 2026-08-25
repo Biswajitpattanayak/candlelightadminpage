@@ -21,6 +21,9 @@ import Boards from './pages/classmanagment/Boards';
 import Classes from './pages/classmanagment/Classes';
 import Subjects from './pages/classmanagment/Subjects';
 
+// ✅ Import Sloka Management Page
+import SlokaManagement from './pages/ReminderDays/SlokaManagement';
+
 function AppRoutes() {
   const { isAuthenticated, userRole, loading } = useContext(AuthContext);
 
@@ -119,6 +122,15 @@ function AppRoutes() {
             </ProtectedRoute>
           } 
         />
+        
+    <Route 
+  path="reminder-days" 
+  element={
+    <ProtectedRoute allowedRoles={['admin', 'super_admin']}>
+      <MainReminder />
+    </ProtectedRoute>
+  } 
+/>
         
         {/* Super Admin Only Routes */}
         <Route 
