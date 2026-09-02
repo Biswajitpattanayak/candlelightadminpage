@@ -10,19 +10,16 @@ import Dashboard from './pages/Dashboard';
 // ✅ Import all pages
 import MainPage from "./pages/student/MainPage";
 import Teachers from './pages/teacher/Teachers';
-import Agents from './pages/Agents';
+import Agents from './pages/Agents';  // ✅ Correct path
 import Transactions from './pages/Transactions';
-import Settings from './pages/setting';
+import Settings from './pages/setting';  // ✅ Correct path (folder with index.jsx)
 import Approvals from './pages/Approvals';
 import MainReminder from './pages/ReminderDays/MainReminder';
 
-// ✅ Import Class Management Pages (3 Separate Pages)
+// ✅ Import Class Management Pages
 import Boards from './pages/classmanagment/Boards';
 import Classes from './pages/classmanagment/Classes';
 import Subjects from './pages/classmanagment/Subjects';
-
-// ✅ Import Sloka Management Page
-import SlokaManagement from './pages/ReminderDays/SlokaManagement';
 
 function AppRoutes() {
   const { isAuthenticated, userRole, loading } = useContext(AuthContext);
@@ -80,24 +77,8 @@ function AppRoutes() {
             </ProtectedRoute>
           } 
         />
-        <Route 
-          path="reminder-days" 
-          element={
-            <ProtectedRoute allowedRoles={['admin', 'super_admin']}>
-              <MainReminder />
-            </ProtectedRoute>
-          } 
-        />
-        <Route 
-          path="approvals" 
-          element={
-            <ProtectedRoute allowedRoles={['admin', 'super_admin']}>
-              <Approvals />
-            </ProtectedRoute>
-          } 
-        />
         
-        {/* ✅ New Routes - 3 Separate Pages for Hierarchy */}
+        {/* ✅ Management Routes */}
         <Route 
           path="boards" 
           element={
@@ -122,21 +103,28 @@ function AppRoutes() {
             </ProtectedRoute>
           } 
         />
+        <Route 
+          path="reminder-days" 
+          element={
+            <ProtectedRoute allowedRoles={['admin', 'super_admin']}>
+              <MainReminder />
+            </ProtectedRoute>
+          } 
+        />
+        <Route 
+          path="approvals" 
+          element={
+            <ProtectedRoute allowedRoles={['admin', 'super_admin']}>
+              <Approvals />
+            </ProtectedRoute>
+          } 
+        />
         
-    <Route 
-  path="reminder-days" 
-  element={
-    <ProtectedRoute allowedRoles={['admin', 'super_admin']}>
-      <MainReminder />
-    </ProtectedRoute>
-  } 
-/>
-        
-        {/* Super Admin Only Routes */}
+        {/* ✅ Agents & Settings - Both Admin and Super Admin can access */}
         <Route 
           path="agents" 
           element={
-            <ProtectedRoute allowedRoles={['super_admin']}>
+            <ProtectedRoute allowedRoles={['admin', 'super_admin']}>
               <Agents />
             </ProtectedRoute>
           } 
@@ -144,7 +132,7 @@ function AppRoutes() {
         <Route 
           path="settings" 
           element={
-            <ProtectedRoute allowedRoles={['super_admin']}>
+            <ProtectedRoute allowedRoles={['admin', 'super_admin']}>
               <Settings />
             </ProtectedRoute>
           } 

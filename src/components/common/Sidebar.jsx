@@ -44,6 +44,17 @@ export default function Sidebar() {
     return () => window.removeEventListener('resize', checkScreen);
   }, []);
 
+  useEffect(() => {
+    // Auto-expand management menu if any sub-item is active
+    const managementItems = ['/boards', '/classes', '/subjects', '/reminder-days', '/approvals', '/settings'];
+    if (managementItems.includes(location.pathname)) {
+      setExpandedMenus(prev => ({
+        ...prev,
+        'Management': true
+      }));
+    }
+  }, [location.pathname]);
+
   const toggleSubMenu = (menuKey) => {
     setExpandedMenus(prev => ({
       ...prev,
@@ -69,28 +80,30 @@ export default function Sidebar() {
       { path: '/analytics', label: 'Analytics', icon: ChartBarIcon },
     ];
 
-// In Sidebar.jsx - Update the subMenuItems
-const subMenuItems = {
-  'management': {
-    label: 'Management',
-    icon: Cog6ToothIcon,
-    items: [
+    // ✅ Management submenu - Settings for both Admin and Super Admin
+    const managementItems = [
       { path: '/boards', label: 'Boards', icon: AcademicCapIcon },
       { path: '/classes', label: 'Classes', icon: PresentationChartBarIcon },
       { path: '/subjects', label: 'Subjects', icon: BookOpenIcon },
       { path: '/reminder-days', label: 'Reminder Days', icon: CalendarDaysIcon },
       { path: '/approvals', label: 'Approvals', icon: CheckBadgeIcon },
       { path: '/settings', label: 'Settings', icon: Cog6ToothIcon },
-    ]
-  }
-};
+    ];
+
+    const subMenuItems = {
+      'Management': {
+        label: 'Management',
+        icon: Cog6ToothIcon,
+        items: managementItems
+      }
+    };
 
     let baseItems = [...commonItems];
 
     // ✅ Admin & Super Admin = Full Access with Management
     if (userRole === 'admin' || userRole === 'super_admin') {
       baseItems = [...baseItems, ...adminItems];
-      baseItems.push(subMenuItems.management);
+      baseItems.push(subMenuItems.Management);
     } 
     // ❌ Agent = No Management Menu
     else if (userRole === 'agent') {

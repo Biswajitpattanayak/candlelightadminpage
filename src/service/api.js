@@ -572,24 +572,51 @@ export const deleteBoard = async (id) => {
  * GET /get-all-classes/?board_id={boardId}
  * @param {number} boardId - Board ID
  */
+/**
+ * Get all classes for a specific board
+ * GET /get-all-classes/?board_id={boardId}
+ * @param {number} boardId - Board ID
+ */
 export const getClasses = async (boardId) => {
   try {
     const token = localStorage.getItem('accessToken');
+    
+    // ✅ Check if token exists
+    if (!token) {
+      console.error('❌ No access token found in localStorage');
+      throw new Error('Authentication token not found. Please login again.');
+    }
+    
+    console.log('🔑 Token being used:', token ? 'Present ✅' : 'Missing ❌');
+    console.log('📡 Calling API:', `${API_URL}/get-all-classes/?board_id=${boardId}`);
     
     const response = await axios.get(
       `${API_URL}/get-all-classes/?board_id=${boardId}`,
       {
         headers: {
           'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
         },
       }
     );
     
+    console.log('✅ Classes response:', response.data);
     return response.data;
   } catch (error) {
-    console.error('API Error - Get Classes:', error);
-    throw new Error(error.response?.data?.message || error.response?.data?.error || 'Failed to fetch classes');
+    console.error('❌ API Error - Get Classes:', error);
+    console.error('❌ Error response:', error.response?.data);
+    
+    // ✅ Better error handling
+    if (error.response?.status === 401) {
+      throw new Error('Your session has expired. Please login again.');
+    }
+    
+    const errorMsg = error.response?.data?.message || 
+                     error.response?.data?.error || 
+                     'Failed to fetch classes';
+    throw new Error(errorMsg);
   }
+
 };
 
 /**
@@ -698,26 +725,54 @@ export const deleteClass = async (id) => {
  * GET /get-all-subjects/?class_id={classId}
  * @param {number} classId - Optional class ID to filter
  */
-export const getSubjects = async (classId = null) => {
+/**
+ * Get all subjects with board and class info
+ * GET /get-all-subjects/?board_id={boardId}&class_id={classId}
+ * @param {Object} params - { board_id, class_id }
+ */
+export const getSubjects = async (params = {}) => {
   try {
     const token = localStorage.getItem('accessToken');
     
-    const url = classId 
-      ? `${API_URL}/get-all-subjects/?class_id=${classId}`
+    // ✅ Check if token exists
+    if (!token) {
+      console.error('❌ No access token found in localStorage');
+      throw new Error('Authentication token not found. Please login again.');
+    }
+    
+    // Build query string from params
+    const queryParams = new URLSearchParams();
+    if (params.board_id) queryParams.append('board_id', params.board_id);
+    if (params.class_id) queryParams.append('class_id', params.class_id);
+    
+    const queryString = queryParams.toString();
+    const url = queryString 
+      ? `${API_URL}/get-all-subjects/?${queryString}`
       : `${API_URL}/get-all-subjects/`;
+    
+    console.log('📡 Calling API:', url);
+    console.log('🔑 Token:', token ? 'Present ✅' : 'Missing ❌');
     
     const response = await axios.get(
       url,
       {
         headers: {
           'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
         },
       }
     );
     
+    console.log('✅ Subjects response:', response.data);
     return response.data;
   } catch (error) {
-    console.error('API Error - Get Subjects:', error);
+    console.error('❌ API Error - Get Subjects:', error);
+    console.error('❌ Error response:', error.response?.data);
+    
+    if (error.response?.status === 401) {
+      throw new Error('Your session has expired. Please login again.');
+    }
+    
     throw new Error(error.response?.data?.message || error.response?.data?.error || 'Failed to fetch subjects');
   }
 };
