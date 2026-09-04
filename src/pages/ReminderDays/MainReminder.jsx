@@ -10,8 +10,8 @@ export default function MainReminder() {
 
   const tabs = [
     { id: 'special', label: '🎉 Special Days', icon: CalendarIcon },
-    { id: 'word', label: '📖 Word of the Day', icon: SparklesIcon },
-    { id: 'sloka', label: '🕉️ Sloka Management', icon: BookOpenIcon }
+    // { id: 'word', label: '📖 Word of the Day', icon: SparklesIcon },
+    { id: 'sloka', label: '🕉️ Word of the Day', icon: BookOpenIcon }
   ];
 
   return (

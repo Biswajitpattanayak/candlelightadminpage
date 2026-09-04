@@ -177,7 +177,7 @@ export default function SlokaManagement() {
         {/* Header */}
         <div className="flex flex-wrap items-center justify-between gap-4 mb-6">
           <div>
-            <h1 className="text-2xl font-bold text-gray-900">📖 Sloka Management</h1>
+            <h1 className="text-2xl font-bold text-gray-900">Word of the Day </h1>
             <p className="text-sm text-gray-500 mt-1">
               Manage spiritual verses and shlokas
             </p>
