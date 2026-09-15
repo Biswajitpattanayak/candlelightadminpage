@@ -44,6 +44,8 @@ body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  position: relative;              /* ✅ ADDED */
+  overscroll-behavior-x: none;     /* ✅ ADDED */
 }
 
 /* ===== PAGE CONTAINER ===== */
@@ -177,7 +179,8 @@ body {
 }
 
 .input-field:focus {
-  ring: 2px solid #3b82f6;
+  outline: none;                      /* ✅ FIXED: invalid `ring` hataya */
+  box-shadow: 0 0 0 2px #3b82f6;      /* ✅ FIXED: valid focus ring */
   border-color: transparent;
 }
 
@@ -328,6 +331,18 @@ body {
   background-color: #2563eb;
   box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
 }
+
+
+/* ===== HORIZONTAL SCROLL FIX ===== */
+/* ✅ ADDED: Horizontal scroll band karne ke liye (background slide fix) */
+html, body, #root {
+  overflow-x: hidden;
+  width: 100%;
+  max-width: 100%;
+}
+
+
+
 /* ===== SPACING ===== */
 .gap-1 { gap: 0.25rem; }
 .gap-2 { gap: 0.5rem; }

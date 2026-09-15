@@ -1,5 +1,5 @@
 // src/components/common/Sidebar.jsx
-import React, { useState, useEffect, useContext } from 'react';
+import React, { useState, useEffect, useContext, useRef } from 'react'; // ✅ CHANGED: useRef added
 import { NavLink, useNavigate, useLocation } from 'react-router-dom';
 import { 
   HomeIcon, 
@@ -28,15 +28,26 @@ export default function Sidebar() {
   const [isMobile, setIsMobile] = useState(false);
   const [expandedMenus, setExpandedMenus] = useState({});
 
+  // ✅ CHANGED: ref to track initial load
+  const initialLoadDone = useRef(false);
+
+  // ✅ CHANGED: resize par mobile pe sidebar auto-close nahi hoga
   useEffect(() => {
     const checkScreen = () => {
       const mobile = window.innerWidth < 768;
       setIsMobile(mobile);
+
+      // Sirf pehli baar load par isOpen set karo
+      if (!initialLoadDone.current) {
+        setIsOpen(!mobile); // mobile = closed, desktop = open
+        initialLoadDone.current = true;
+      }
+
+      // Desktop pe hamesha open rakho
       if (!mobile) {
         setIsOpen(true);
-      } else {
-        setIsOpen(false);
       }
+      // ❌ Mobile pe isOpen ko touch mat karo (auto-close band)
     };
     
     checkScreen();
@@ -80,7 +91,6 @@ export default function Sidebar() {
       { path: '/analytics', label: 'Analytics', icon: ChartBarIcon },
     ];
 
-    // ✅ Management submenu - Settings for both Admin and Super Admin
     const managementItems = [
       { path: '/boards', label: 'Boards', icon: AcademicCapIcon },
       { path: '/classes', label: 'Classes', icon: PresentationChartBarIcon },
@@ -100,12 +110,10 @@ export default function Sidebar() {
 
     let baseItems = [...commonItems];
 
-    // ✅ Admin & Super Admin = Full Access with Management
     if (userRole === 'admin' || userRole === 'super_admin') {
       baseItems = [...baseItems, ...adminItems];
       baseItems.push(subMenuItems.Management);
     } 
-    // ❌ Agent = No Management Menu
     else if (userRole === 'agent') {
       baseItems = [...baseItems, ...agentItems];
     }
@@ -149,14 +157,15 @@ export default function Sidebar() {
         </button>
       )}
 
+      {/* ✅ CHANGED: onClick={closeSidebar} hata diya — bahar click se band nahi hoga */}
       {isMobile && isOpen && (
-        <div className="fixed inset-0 bg-black/50 z-40" onClick={closeSidebar} />
+        <div className="fixed inset-0 bg-black/50 z-40" />
       )}
 
       <aside
         className={`
           fixed top-0 left-0 h-full bg-gradient-to-b from-blue-800 to-blue-900 text-white z-50
-          transition-all duration-300 ease-in-out
+          transition-transform duration-300 ease-in-out
           ${isOpen ? 'translate-x-0' : '-translate-x-full'}
           ${isMobile ? 'w-72' : 'w-64'}
           shadow-2xl
