@@ -231,7 +231,7 @@ export default function Approvals() {
   }
 
   return (
-    <div className="p-6 max-w-7xl mx-auto">
+    <div className="p-4 max-w-7xl">
       {/* Notification */}
       {notification && (
         <div className={`fixed top-4 right-4 z-50 ${

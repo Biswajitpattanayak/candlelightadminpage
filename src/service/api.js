@@ -943,3 +943,38 @@ export const deleteSloka = async (id) => {
     throw error;
   }
 };
+
+
+
+// =============================================
+// ===== TOP TEACHERS API =====
+// =============================================
+
+/**
+ * Get Top 10 teachers (ranked by total uploads)
+ * GET /top-five-teachers/
+ */
+export const getTopTeachers = async () => {
+  try {
+    const token = localStorage.getItem('accessToken');
+
+    const response = await axios.get(
+      `${API_URL}/top-five-teachers/`,
+      {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+      }
+    );
+
+    return response.data;
+  } catch (error) {
+    console.error('API Error - Get Top Teachers:', error);
+    const errorMsg =
+      error.response?.data?.message ||
+      error.response?.data?.error ||
+      'Failed to fetch top teachers';
+    throw new Error(errorMsg);
+  }
+};

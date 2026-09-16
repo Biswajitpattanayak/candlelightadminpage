@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from "react";
+import React, { useMemo, useState, useEffect } from "react";
 import {
   TrophyIcon,
   AcademicCapIcon,
@@ -22,9 +22,49 @@ import {
   ResponsiveContainer,
   Cell,
 } from "recharts";
+import { getTopTeachers } from "../../service/api";
 
-export default function TopTeachers({ teachers = [] }) {
+export default function TopTeachers() {
+  const [teachers, setTeachers] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const [activeTab, setActiveTab] = useState("month");
+  const [refreshKey, setRefreshKey] = useState(0);
+
+  // ✅ Fetch dynamic data from API
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+
+        const json = await getTopTeachers();
+
+        // API: { status, message, data: [{ rank, teacher_id, teacher_name, email, total_questions_uploaded }] }
+        const list = Array.isArray(json?.data) ? json.data : [];
+
+        const normalized = list.map((t, i) => ({
+          id: t.teacher_id ?? i,
+          rank: t.rank ?? i + 1,
+          name: t.teacher_name || "Unknown",
+          email: t.email || "",
+          uploads: Number(t.total_questions_uploaded || 0),
+          subject: t.subject || "—",
+          district: t.district || "—",
+          earnings: Number(t.earnings || 0),
+        }));
+
+        setTeachers(normalized);
+      } catch (err) {
+        console.error("❌ Top teachers fetch failed:", err);
+        setError(err.message);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+  }, [refreshKey]);
 
   const topTeachers = useMemo(() => {
     return [...teachers]
@@ -32,18 +72,15 @@ export default function TopTeachers({ teachers = [] }) {
       .slice(0, 10);
   }, [teachers]);
 
-  // Monthly Data
-  const monthlyData = [
-    { month: "Jan", uploads: 45 },
-    { month: "Feb", uploads: 52 },
-    { month: "Mar", uploads: 58 },
-    { month: "Apr", uploads: 62 },
-    { month: "May", uploads: 70 },
-    { month: "Jun", uploads: 78 },
-    { month: "Jul", uploads: 85 },
-  ];
+  // Monthly Data — top teachers ke naam + uploads se dynamic
+  const monthlyData = useMemo(() => {
+    return topTeachers.slice(0, 7).map((t) => ({
+      month: t.name?.split(" ")[0] || "—",
+      uploads: t.uploads,
+    }));
+  }, [topTeachers]);
 
-  // Yearly Data
+  // Yearly Data — placeholder (API me yearly data nahi hai)
   const yearlyData = [
     { month: "2020", uploads: 120 },
     { month: "2021", uploads: 180 },
@@ -57,11 +94,7 @@ export default function TopTeachers({ teachers = [] }) {
 
   const containerVariants = {
     hidden: {},
-    visible: {
-      transition: {
-        staggerChildren: 0.06,
-      },
-    },
+    visible: { transition: { staggerChildren: 0.06 } },
   };
 
   const rowVariants = {
@@ -102,6 +135,33 @@ export default function TopTeachers({ teachers = [] }) {
     return { text: "Active", color: "text-gray-500" };
   };
 
+  // ✅ Loading state
+  if (loading) {
+    return (
+      <div className="bg-white rounded-xl p-8 text-center border border-gray-200">
+        <div className="w-10 h-10 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mx-auto mb-3" />
+        <p className="text-gray-500 text-sm">Loading top teachers...</p>
+      </div>
+    );
+  }
+
+  // ✅ Error state
+  if (error) {
+    return (
+      <div className="bg-white rounded-xl p-8 text-center border border-red-200">
+        <TrophyIcon className="w-12 h-12 text-red-300 mx-auto mb-3" />
+        <p className="text-red-500 text-sm">Failed to load: {error}</p>
+        <button
+          onClick={() => setRefreshKey((k) => k + 1)}
+          className="mt-3 text-xs text-blue-600 underline"
+        >
+          Retry
+        </button>
+      </div>
+    );
+  }
+
+  // ✅ Empty state
   if (!topTeachers.length) {
     return (
       <div className="bg-white rounded-xl p-8 text-center border border-gray-200">
@@ -110,6 +170,10 @@ export default function TopTeachers({ teachers = [] }) {
       </div>
     );
   }
+
+  const totalUploads = topTeachers.reduce((acc, t) => acc + t.uploads, 0);
+  const avgUploads = Math.round(totalUploads / topTeachers.length) || 0;
+  const totalEarnings = topTeachers.reduce((acc, t) => acc + t.earnings, 0);
 
   return (
     <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
@@ -127,7 +191,7 @@ export default function TopTeachers({ teachers = [] }) {
         <div className="flex items-center gap-3">
           <div className="flex items-center gap-1.5 text-xs text-gray-400">
             <DocumentTextIcon className="w-3.5 h-3.5" />
-            <span>{topTeachers.reduce((acc, t) => acc + t.uploads, 0)} total</span>
+            <span>{totalUploads} total</span>
           </div>
         </div>
       </div>
@@ -140,26 +204,21 @@ export default function TopTeachers({ teachers = [] }) {
             <p className="text-[10px] text-gray-500">Top Teachers</p>
           </div>
           <div className="bg-green-50 rounded-lg px-3 py-2 text-center">
-            <p className="text-lg font-bold text-green-600">
-              {Math.round(
-                topTeachers.reduce((acc, t) => acc + t.uploads, 0) /
-                  topTeachers.length
-              )}
-            </p>
+            <p className="text-lg font-bold text-green-600">{avgUploads}</p>
             <p className="text-[10px] text-gray-500">Avg Uploads</p>
           </div>
           <div className="bg-purple-50 rounded-lg px-3 py-2 text-center">
             <p className="text-lg font-bold text-purple-600">
-              ₹{topTeachers.reduce((acc, t) => acc + t.earnings, 0).toLocaleString()}
+              ₹{totalEarnings.toLocaleString()}
             </p>
             <p className="text-[10px] text-gray-500">Total Earnings</p>
           </div>
         </div>
       </div>
 
-      {/* Main Grid - 60% List + 40% Chart */}
+      {/* Main Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-10 gap-4 p-4">
-        {/* Left: Leaderboard List (60%) */}
+        {/* Left: Leaderboard */}
         <div className="lg:col-span-6">
           <div className="rounded-xl border border-blue-200 bg-gradient-to-b from-blue-50 to-white p-3">
             {/* Toolbar */}
@@ -169,6 +228,7 @@ export default function TopTeachers({ teachers = [] }) {
                 Top 10 Teachers
               </div>
               <motion.button
+                onClick={() => setRefreshKey((k) => k + 1)}
                 whileHover={{ rotate: 180, scale: 1.05 }}
                 whileTap={{ scale: 0.9 }}
                 className="rounded-full bg-white/70 p-1.5 text-blue-600 shadow-sm hover:bg-white"
@@ -177,7 +237,7 @@ export default function TopTeachers({ teachers = [] }) {
               </motion.button>
             </div>
 
-            {/* List - 10 Teachers */}
+            {/* List */}
             <motion.div
               variants={containerVariants}
               initial="hidden"
@@ -189,7 +249,7 @@ export default function TopTeachers({ teachers = [] }) {
                 const status = getStatus(index);
 
                 return (
-                  <React.Fragment key={teacher.id ?? `${teacher.name}-${index}`}>
+                  <React.Fragment key={teacher.id}>
                     {index === 5 && (
                       <motion.div
                         initial={{ opacity: 0, scaleX: 0.7 }}
@@ -215,9 +275,7 @@ export default function TopTeachers({ teachers = [] }) {
                     >
                       {/* Rank */}
                       <motion.div
-                        animate={
-                          index < 3 ? { rotate: [0, -5, 5, 0] } : {}
-                        }
+                        animate={index < 3 ? { rotate: [0, -5, 5, 0] } : {}}
                         transition={{
                           duration: 2,
                           repeat: Infinity,
@@ -235,10 +293,7 @@ export default function TopTeachers({ teachers = [] }) {
                         </div>
                         {index < 3 && (
                           <motion.span
-                            animate={{
-                              scale: [1, 1.3, 1],
-                              rotate: [0, 15, 0],
-                            }}
+                            animate={{ scale: [1, 1.3, 1], rotate: [0, 15, 0] }}
                             transition={{ duration: 1.8, repeat: Infinity }}
                             className="absolute -right-1 -top-1.5 text-xs"
                           >
@@ -253,19 +308,17 @@ export default function TopTeachers({ teachers = [] }) {
                           {teacher.name}
                         </p>
                         <div className="flex flex-wrap items-center gap-x-1.5">
-                          <span
-                            className={`text-[10px] font-semibold ${status.color}`}
-                          >
+                          <span className={`text-[10px] font-semibold ${status.color}`}>
                             ● {status.text}
                           </span>
-                          <span className="text-[9px] font-medium text-gray-400 flex items-center gap-0.5">
+                          {/* <span className="text-[9px] font-medium text-gray-400 flex items-center gap-0.5">
                             <AcademicCapIcon className="w-3 h-3" />
                             {teacher.subject}
                           </span>
                           <span className="text-[9px] font-medium text-gray-400 flex items-center gap-0.5">
                             <MapPinIcon className="w-3 h-3" />
                             {teacher.district}
-                          </span>
+                          </span> */}
                         </div>
                       </div>
 
@@ -275,9 +328,7 @@ export default function TopTeachers({ teachers = [] }) {
                           <p className="text-sm font-bold text-blue-600">
                             {teacher.uploads}
                           </p>
-                          <p className="text-[9px] text-gray-400 -mt-0.5">
-                            uploads
-                          </p>
+                          <p className="text-[9px] text-gray-400 -mt-0.5">uploads</p>
                         </div>
                       </div>
 
@@ -287,9 +338,7 @@ export default function TopTeachers({ teachers = [] }) {
                           <p className="text-sm font-bold text-green-600">
                             ₹{teacher.earnings.toLocaleString()}
                           </p>
-                          <p className="text-[9px] text-gray-400 -mt-0.5">
-                            earned
-                          </p>
+                          <p className="text-[9px] text-gray-400 -mt-0.5">earned</p>
                         </div>
                       </div>
                     </motion.div>
@@ -300,10 +349,9 @@ export default function TopTeachers({ teachers = [] }) {
           </div>
         </div>
 
-        {/* Right: Bar Chart Section (40%) */}
+        {/* Right: Chart */}
         <div className="lg:col-span-4">
           <div className="rounded-xl border-2 border-blue-200 bg-gradient-to-b from-blue-50 to-white p-4 shadow-[0_4px_0_#93c5fd] h-full flex flex-col">
-            {/* Chart Header */}
             <div className="flex items-center justify-between mb-3">
               <div className="flex items-center gap-2">
                 <ChartBarIcon className="w-5 h-5 text-blue-600" />
@@ -336,38 +384,27 @@ export default function TopTeachers({ teachers = [] }) {
             {/* Stats */}
             <div className="grid grid-cols-3 gap-2 mb-4">
               <div className="bg-blue-50 rounded-xl px-3 py-2.5 text-center border border-blue-100">
-                <p className="text-lg font-bold text-blue-600">
-                  {Math.round(
-                    topTeachers.reduce((acc, t) => acc + t.uploads, 0) /
-                      topTeachers.length
-                  )}
-                </p>
-                <p className="text-[8px] text-gray-400 font-medium">
-                  Avg Uploads
-                </p>
+                <p className="text-lg font-bold text-blue-600">{avgUploads}</p>
+                <p className="text-[8px] text-gray-400 font-medium">Avg Uploads</p>
               </div>
               <div className="bg-green-50 rounded-xl px-3 py-2.5 text-center border border-green-100">
                 <p className="text-lg font-bold text-green-600">↑22%</p>
                 <p className="text-[8px] text-gray-400 font-medium">Growth</p>
               </div>
               <div className="bg-purple-50 rounded-xl px-3 py-2.5 text-center border border-purple-100">
-                <p className="text-lg font-bold text-purple-600">10</p>
+                <p className="text-lg font-bold text-purple-600">{topTeachers.length}</p>
                 <p className="text-[8px] text-gray-400 font-medium">Top</p>
               </div>
             </div>
 
-            {/* Bar Chart */}
+            {/* Chart */}
             <div className="flex-1 min-h-[200px]">
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart data={chartData} barCategoryGap="20%">
                   <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
                   <XAxis
                     dataKey="month"
-                    tick={{
-                      fontSize: 10,
-                      fill: "#6b7280",
-                      fontWeight: 500,
-                    }}
+                    tick={{ fontSize: 10, fill: "#6b7280", fontWeight: 500 }}
                     axisLine={false}
                     tickLine={false}
                   />
@@ -387,17 +424,9 @@ export default function TopTeachers({ teachers = [] }) {
                       boxShadow: "0 4px 12px rgba(0,0,0,0.1)",
                     }}
                   />
-                  <Bar
-                    dataKey="uploads"
-                    radius={[6, 6, 0, 0]}
-                    barSize={32}
-                    animationDuration={1000}
-                  >
+                  <Bar dataKey="uploads" radius={[6, 6, 0, 0]} barSize={32} animationDuration={1000}>
                     {chartData.map((entry, index) => (
-                      <Cell
-                        key={index}
-                        fill={barColors[index % barColors.length]}
-                      />
+                      <Cell key={index} fill={barColors[index % barColors.length]} />
                     ))}
                   </Bar>
                 </BarChart>
@@ -411,9 +440,7 @@ export default function TopTeachers({ teachers = [] }) {
       <div className="px-4 py-2.5 bg-gray-50/80 border-t border-gray-100 flex items-center justify-between">
         <div className="flex items-center gap-2">
           <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
-          <span className="text-[10px] text-gray-500">
-            Top performers this month
-          </span>
+          <span className="text-[10px] text-gray-500">Top performers this month</span>
         </div>
         <div className="flex items-center gap-2">
           <span className="text-[10px] text-gray-400">🏆</span>
