@@ -978,3 +978,64 @@ export const getTopTeachers = async () => {
     throw new Error(errorMsg);
   }
 };
+
+
+// =============================================
+// ===== INSPIRATION OF THE DAY APIs (ADMIN) =====
+// =============================================
+
+/**
+ * Get ALL inspirations (Admin panel ke liye)
+ * GET /inspiration/
+ */
+export const getInspirations = async () => {
+  try {
+    const token = localStorage.getItem('accessToken');
+    
+    // Bina date ke call, saara data ek saath aayega
+    const response = await axios.get(
+      `${API_URL}/inspiration/`,
+      {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        },
+      }
+    );
+    
+    return response.data;
+  } catch (error) {
+    console.error('API Error - Get Inspirations:', error);
+    const errorMsg = error.response?.data?.message || 
+                     error.response?.data?.error || 
+                     'Failed to fetch inspirations';
+    throw new Error(errorMsg);
+  }
+};
+
+/**
+ * Create a new inspiration
+ * POST /inspiration/create/
+ */
+export const createInspiration = async (formData) => {
+  try {
+    const token = localStorage.getItem('accessToken');
+    
+    const response = await axios.post(
+      `${API_URL}/inspiration/create/`,
+      formData,
+      {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        },
+      }
+    );
+    
+    return response.data;
+  } catch (error) {
+    console.error('API Error - Create Inspiration:', error);
+    const errorMsg = error.response?.data?.message || 
+                     error.response?.data?.error || 
+                     'Failed to create inspiration';
+    throw new Error(errorMsg);
+  }
+};

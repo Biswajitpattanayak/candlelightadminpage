@@ -1,9 +1,10 @@
 // src/pages/ReminderDays/MainReminder.jsx
 import React, { useState } from 'react';
-import { CalendarIcon, SparklesIcon, BookOpenIcon } from '@heroicons/react/24/outline';
+import { CalendarIcon, SparklesIcon, BookOpenIcon, StarIcon } from '@heroicons/react/24/outline';
 import SpecialDays from './SpecialDays';
 import WordOfTheDay from './WordOfTheDay';
 import SlokaManagement from './SlokaManagement';
+import InspirationOfTheDay from './InspirationOfTheDay'; // 👈 1. Import kiya
 
 export default function MainReminder() {
   const [activeTab, setActiveTab] = useState('special');
@@ -11,7 +12,8 @@ export default function MainReminder() {
   const tabs = [
     { id: 'special', label: '🎉 Special Days', icon: CalendarIcon },
     // { id: 'word', label: '📖 Word of the Day', icon: SparklesIcon },
-    { id: 'sloka', label: '🕉️ Word of the Day', icon: BookOpenIcon }
+    { id: 'sloka', label: '🕉️ Word of the Day', icon: BookOpenIcon },
+    { id: 'inspiration', label: '✨ Inspiration', icon: StarIcon } // 👈 2. Naya Tab add kiya
   ];
 
   return (
@@ -19,7 +21,7 @@ export default function MainReminder() {
       {/* Header */}
       <div className="mb-6">
         <h1 className="text-3xl font-bold text-gray-900">📅 Reminder Days</h1>
-        <p className="text-gray-600 mt-1">Manage special days, daily word, and slokas</p>
+        <p className="text-gray-600 mt-1">Manage special days, daily word, and inspirations</p>
       </div>
 
       {/* Tabs */}
@@ -49,6 +51,7 @@ export default function MainReminder() {
         {activeTab === 'special' && <SpecialDays />}
         {activeTab === 'word' && <WordOfTheDay />}
         {activeTab === 'sloka' && <SlokaManagement />}
+        {activeTab === 'inspiration' && <InspirationOfTheDay />} {/* 👈 3. Call kiya */}
       </div>
     </div>
   );
